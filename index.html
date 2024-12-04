@@ -1,0 +1,35 @@
+<html>
+  <body>
+    <input id="fileInput" type="file"/>
+    <button id="mergeBtn">merge</button>
+    <script>
+      const fileEl = document.querySelector('#fileInput');
+      const mergeBtnEl = document.querySelector('#mergeBtn');
+      const chunkSize = 20 * 1024;
+      const chunks = [];
+
+      fileEl.onchange = () => {
+        const file = fileEl.files[0];
+        let startPos = 0;
+        while(startPos < file.size) {
+          // 文件分片
+          chunks.push(file.slice(startPos, startPos + chunkSize));
+          startPos += chunkSize;
+        }
+        chunks.map((chunk, index) => {
+          const data = new FormData();
+          data.set('name', file.name + '_' + index)
+          data.append('files', chunk);
+          fetch('http://127.0.0.1:3000/upload', {
+            method: 'POST',
+            body: data
+          });
+        })
+      }
+      mergeBtn.onclick = () => {
+        const file = fileEl.files[0];
+        fetch(`http://127.0.0.1:3000/merge?name=${file.name}`);
+      }
+    </script>
+  </body>
+</html>
